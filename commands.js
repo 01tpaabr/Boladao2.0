@@ -1,7 +1,7 @@
-const commands = {
-    ['%Oi']: (params) => {
-        
 
+const commands = {
+    ['%Oi']: (messageObj, params) => {
+        messageObj.channel.send(`Oi ${messageObj.author}`);
     },
 };
 

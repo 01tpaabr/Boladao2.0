@@ -18,7 +18,7 @@ async function handleMessages(message){
         
         //Run command specified
         if(commandName in commandHash){
-            commandHash[commandName](params);
+            commandHash[commandName](message, params);
         }
 
     }
