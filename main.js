@@ -1,5 +1,8 @@
 const dotenv = require('dotenv').config();
+const config = require('./config.json');
+const fs = require('fs');
 const Discord = require('discord.js');
+const { Console } = require('console');
 const bot = new Discord.Client();
 const args = process.argv;
 
@@ -11,7 +14,7 @@ async function start() {
         if(args.length > 1 && args[2] == 'servers'){
             let guildManager = bot.guilds;
             let guildList = guildManager.cache;
-            
+
             console.log("List of Connected Servers: ")
             for(id of guildList){
                 let guild = id[1];
@@ -34,13 +37,41 @@ async function start() {
         }
     })
 
+    //Update Logs
     bot.on('guildCreate', async (guild) => {
-        console.log(`Someone added me to ${guild.name}`);
+        try{
+            let newInfo = `(ADDED) Server: '${guild.name}', ID: '${guild.id}', Joined at: '${guild.joinedAt}', Is Admin: '${guild.me.permissions.has(8)}'\n`
+            fs.appendFile('logs', newInfo, (err) => {
+                if(err != null){
+                    console.log(err);
+                }
+            })
+        }catch(err){
+            console.log("Error while reading or writing log.");
+            console.log(err);
+        }
     });
+
+    bot.on('guildDelete', async (guild) => {
+        console.log(`Someone kicked me from ${guild.name}`);
+        try{
+            let newInfo = `(KICKED) Server: '${guild.name}', ID: '${guild.id}'\n`
+            fs.appendFile('logs', newInfo, (err) => {
+                if(err != null){
+                    console.log(err);
+                }
+            })
+        }catch(err){
+            console.log("Error while reading or writing log.");
+            console.log(err);
+        }
+    });
+
 
     //Handling commands
     bot.on('message', async (message) => {
-        
+        //Validate for prefix in message
+        //console.log(message);
     });
 
 }
