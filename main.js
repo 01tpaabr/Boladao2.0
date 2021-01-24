@@ -1,10 +1,20 @@
+const fs = require('fs');
+const args = process.argv;
 const dotenv = require('dotenv').config();
 const config = require('./config.json');
-const fs = require('fs');
+const commandHash = require('./commands.js');
 const Discord = require('discord.js');
-const { Console } = require('console');
 const bot = new Discord.Client();
-const args = process.argv;
+
+async function handleMessages(message){
+    //Test if message starts with prefix
+    let messageData = message.content;
+    if(messageData[0] == '%'){
+        //Command Hash for organization
+        commandHash['Hello']();
+    }
+}
+
 
 async function start() {
     await bot.once('ready', () => {
@@ -18,7 +28,7 @@ async function start() {
             console.log("List of Connected Servers: ")
             for(id of guildList){
                 let guild = id[1];
-                console.log(`Server: '${guild.name}', ID: '${id[0]}', Joined at: '${guild.joinedAt}'`)
+                console.log(`Server: '${guild.name}', ID: '${id[0]}', Joined at: '${guild.joinedAt}', Is Admin: '${guild.me.permissions.has(8)}'`)
             }
 
             process.exit();
@@ -70,8 +80,7 @@ async function start() {
 
     //Handling commands
     bot.on('message', async (message) => {
-        //Validate for prefix in message
-        //console.log(message);
+        handleMessages(message);
     });
 
 }
