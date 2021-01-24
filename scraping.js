@@ -1,28 +1,42 @@
 const cheerio = require('cheerio');
 const axios = require('axios');
-const baseWiki = "https://pt.wikipedia.org/"
-const startingWiki = 'wiki/Wikip%C3%A9dia:P%C3%A1gina_principal'
+
 const functions = {
-    loadPage(url, process){
-        axios.get(url).then(res => {
+    async loadPage(url, process){
+        let resolved = await axios.get(url).then(async res => {
+            let currUrl = await res.request.connection._httpMessage._redirectable._currentUrl;
             //Function used to process the data of the page
-            process(res.data);
+            let response = await process(res.data);
+            
+            return [currUrl, response];
         })
+        
+        return resolved;
     },
-    loadLinks(data){
+    async loadLinks(data){
         const $ = cheerio.load(data);
         let links = $('a');
+        let linksText = []
         $(links).each((i, link) => {
-            console.log($(link).text() + ':\n  ' + $(link).attr('href'))
+            linksText.push([$(link).text(), $(link).attr('href')]);
         })
 
-    },
-    loadRandomParagraph(data){
+        return linksText;
 
+    },
+    async loadParagraphs(data){
+        
+        const $ = await cheerio.load(data);
+        let paragraphs = $('p');
+        let paragraphsText = []
+        $(paragraphs).each((i, p) => {
+            paragraphsText.push($(p).text());
+        })
+
+        return paragraphsText.slice(0, 2);
     }
 }
 
-functions.loadPage(baseWiki + startingWiki, functions.loadLinks);
 
 
 module.exports = functions;
