@@ -4,14 +4,23 @@ const dotenv = require('dotenv').config();
 const config = require('./config.json');
 const commandHash = require('./commands.js');
 const Discord = require('discord.js');
+
 const bot = new Discord.Client();
 
 async function handleMessages(message){
     //Test if message starts with prefix
     let messageData = message.content;
+
     if(messageData[0] == '%'){
-        //Command Hash for organization
-        commandHash['Hello']();
+        messageData = messageData.split(" ");
+        let commandName = messageData[0];
+        let params = messageData.slice(1);
+        
+        //Run command specified
+        if(commandName in commandHash){
+            commandHash[commandName](params);
+        }
+
     }
 }
 

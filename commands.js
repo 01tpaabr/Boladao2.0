@@ -1,7 +1,8 @@
 const commands = {
-    ['Hello']: () => {
-        console.log("Opa");
-    }
+    ['%Oi']: (params) => {
+        
+
+    },
 };
 
 module.exports = commands;
