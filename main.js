@@ -11,14 +11,14 @@ async function handleMessages(message){
     //Test if message starts with prefix
     let messageData = message.content;
 
-    if(messageData[0] == '%'){
+    if(messageData[0] == config.prefix){
         messageData = messageData.split(" ");
         let commandName = messageData[0];
         let params = messageData.slice(1);
         
         //Run command specified
         if(commandName in commandHash){
-            commandHash[commandName](message, params);
+            commandHash[commandName](message, params, bot);
         }
 
     }
@@ -90,6 +90,7 @@ async function start() {
     //Handling commands
     bot.on('message', async (message) => {
         handleMessages(message);
+        bot.sweepMessages(1800);
     });
 
 }

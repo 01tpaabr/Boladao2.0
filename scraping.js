@@ -24,8 +24,7 @@ const functions = {
         return linksText;
 
     },
-    async loadParagraphs(data){
-        
+    async loadParagraphs(data){   
         const $ = await cheerio.load(data);
         let paragraphs = $('p');
         let paragraphsText = []
