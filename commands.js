@@ -22,11 +22,18 @@ const commands = {
             let membersList = voiceChannel.members;
             const connection = await voiceChannel.join();
             const audioReceiver = connection.receiver;
+            const timeStamp = new Date();
+            //Needs to play something before recording, because of discord.js bug
+            connection.play('sim.mp3', { volume: 0.1 });
+
             for(m of membersList){
                 //Do not record audio from bots
                 if(!(m[1].user.bot)){
-                    //Adding an audio stream for each user in the channel
-                    streamList.push(audioReceiver.createStream(m[0], {mode: "pcm", end: "manual"}));
+                    //Adding an audio stream for each user in the channel, and storing the channel id
+                    let audioStream = audioReceiver.createStream(m[1].user, {mode: "pcm", end: "manual"});
+                    //Naming file with descriminators
+                    let writtenStream = audioStream.pipe(fs.createWriteStream(`./audios/User-${m[1].user.username}_Server-${voiceChannel.guild.name}_Channel-${voiceChannel.name}_Time-${timeStamp.getHours()}h${timeStamp.getMinutes()}min${timeStamp.getDate()}-${timeStamp.getMonth()}-${timeStamp.getFullYear()}.pcm`));
+                    streamList.push([voiceChannel.id, audioStream]);
 
                 }
             }
@@ -49,18 +56,24 @@ const commands = {
             //Test if message author is in the same channel as the bot
             if(sameChannel){
                 //Terminate streams
-                streamList.forEach(s => {
-                    s.destroy();
-                });
-        
-                //Resets array
-                streamList = []
+                for(i = 0; streamList.length; i ++){
+                    currStream = streamList[i];
+                    //Terminate only streams from that channel
+                    if(currStream[0] == voiceChannel.id){
+                        currStream[1].destroy();
+                        streamList.splice(i, 1);
+                        //stay in the same index
+                        i += -1;
+                    }
+                }
         
                 //Leave channel
                 currentChannel.disconnect();
+            }else{
+                messageObj.channel.send(`Não está no meu canal de voz`);
             }
         }else{
-            messageObj.channel.send(`Entra em um canal de voz`);
+            messageObj.channel.send(`Entra no meu canal de voz`);
         }
     },
     ['%help']: async (messageObj, params) => {
