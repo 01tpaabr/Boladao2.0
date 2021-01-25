@@ -80,11 +80,11 @@ const commands = {
     },
     ['%audio']: async (messageObj, params) => {
         //Retrieve audios
-        if(params.length === 1){
+        if(params.length >= 1 && params.length < 3){
             let username = params[0];
             //Convert .pcm to .wav
             try{
-                //Convert into array
+                //Turn into array
                 let pcmFileNames = execSync(`find | grep -e "f.pcm"`).toString();
                 let pcmFiles = pcmFileNames.split('\n');
                 pcmFiles = pcmFiles.slice(0, pcmFiles.length - 1);
@@ -92,13 +92,13 @@ const commands = {
                 //Convert all files
                 pcmFiles.forEach(audioName => {
                     //Trim .pcm from fileNames 
-                    audioName = audioName.slice(0, audioName.length - 4)
+                    audioName = audioName.slice(0, audioName.length - 4);
                     try{
                         execSync(`pcm2wav --in ${audioName}.pcm --out ${audioName}.wav --bitrate 48000 --channels 2`);
                     }catch(e){
-                        console.log("Error in conversion")
+                        console.log("Error in conversion");
                     }
-                    
+
                     //Remove old pcm files
                     try{
                         execSync(`rm ${audioName}.pcm`);
@@ -110,14 +110,39 @@ const commands = {
                 //No pcm files
             }
 
-            //Show files .wav  
+            //Show files .wav according to the param 
             try{
-                // let wavFiles = execSync(`find | grep -e "${username}.*.pcm"`).toString();
-                
-                // messageObj.channel.send(`Achei estes arquivos ${username}:\n${pcmFileNames}`);
+                //Turn into array
+                let wavFileNames = execSync(`find | grep -e "${username}.*.wav"`).toString();
+                let wavFiles = wavFileNames.split('\n');
+                wavFiles = wavFiles.slice(0, wavFiles.length - 1);
+
+                if(params.length === 1){
+                    messageObj.channel.send(`Achei estes arquivos "${username}":`);
+                    let t = 1;
+                    wavFiles.forEach(audioName => {
+                        //Trim filepath
+                        audioName = audioName.slice(8, audioName.length);
+    
+                        messageObj.channel.send(`${t}:  ${audioName}`);
+                        t += 1;
+                    });
+                    messageObj.channel.send(`------------------------------------------------`);
+                    messageObj.channel.send(`Escolha algum usando:\n    %audio "nome_autor" "numero_arquivo"`);
+                }else{
+                    let fileNumber = params[1];
+                    if(fileNumber <= wavFiles.length){
+                        let chosenFile = wavFiles[fileNumber - 1];
+                        messageObj.channel.send("AQUI: ", {files: [chosenFile]});
+                    }else{
+                        messageObj.channel.send("Número de arquivo invalido");
+                    }
+
+                }
+
                 
             }catch(e){
-                messageObj.channel.send("Não consegui achar arquivo nenhum.")
+                messageObj.channel.send(`Não consegui achar arquivo "${username}" nenhum.`)
             }
 
         }else{
