@@ -24,7 +24,7 @@ const commands = {
             const audioReceiver = connection.receiver;
             const timeStamp = new Date();
             //Needs to play something before recording, because of discord.js bug
-            connection.play('sim.mp3', { volume: 0.1 });
+            connection.play('./audios/sim.mp3', { volume: 0.1 });
 
             for(m of membersList){
                 //Do not record audio from bots
