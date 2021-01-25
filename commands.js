@@ -1,10 +1,11 @@
 const scraping = require('./scraping.js');
 const baseWiki = "https://pt.wikipedia.org/";
 const fs = require('fs');
-const { Client } = require('discord.js');
 const randonWiki = "wiki/Especial:Aleat%C3%B3ria";
-//List to store audio streams then, terminate them.
-let streamList = []
+const {execSync} = require('child_process');
+//List to store audio streams then
+let streamList = [];
+
 
 const commands = {
     ['%oi']: async (messageObj, params) => {
@@ -32,7 +33,9 @@ const commands = {
                     //Adding an audio stream for each user in the channel, and storing the channel id
                     let audioStream = audioReceiver.createStream(m[1].user, {mode: "pcm", end: "manual"});
                     //Naming file with descriminators
-                    let writtenStream = audioStream.pipe(fs.createWriteStream(`./audios/User-${m[1].user.username}_Server-${voiceChannel.guild.name}_Channel-${voiceChannel.name}_Time-${timeStamp.getHours()}h${timeStamp.getMinutes()}min${timeStamp.getDate()}-${timeStamp.getMonth()}-${timeStamp.getFullYear()}.pcm`));
+                    let audioName = `./audios/User-${m[1].user.username}_Server-${voiceChannel.guild.name}_Channel-${voiceChannel.name}_Time-${timeStamp.getHours()}h${timeStamp.getMinutes()}min${timeStamp.getDate()}-${timeStamp.getMonth()}-${timeStamp.getFullYear()}`;
+                    let writtenStream = audioStream.pipe(fs.createWriteStream(`${audioName}f.pcm`));
+                    
                     streamList.push([voiceChannel.id, audioStream]);
 
                 }
@@ -66,7 +69,6 @@ const commands = {
                         i += -1;
                     }
                 }
-        
                 //Leave channel
                 currentChannel.disconnect();
             }else{
@@ -75,6 +77,53 @@ const commands = {
         }else{
             messageObj.channel.send(`Entra no meu canal de voz`);
         }
+    },
+    ['%audio']: async (messageObj, params) => {
+        //Retrieve audios
+        if(params.length === 1){
+            let username = params[0];
+            //Convert .pcm to .wav
+            try{
+                //Convert into array
+                let pcmFileNames = execSync(`find | grep -e "f.pcm"`).toString();
+                let pcmFiles = pcmFileNames.split('\n');
+                pcmFiles = pcmFiles.slice(0, pcmFiles.length - 1);
+
+                //Convert all files
+                pcmFiles.forEach(audioName => {
+                    //Trim .pcm from fileNames 
+                    audioName = audioName.slice(0, audioName.length - 4)
+                    try{
+                        execSync(`pcm2wav --in ${audioName}.pcm --out ${audioName}.wav --bitrate 48000 --channels 2`);
+                    }catch(e){
+                        console.log("Error in conversion")
+                    }
+                    
+                    //Remove old pcm files
+                    try{
+                        execSync(`rm ${audioName}.pcm`);
+                    }catch(e){
+                        console.log("Error removing pcm files");
+                    }
+                });
+            }catch(e){
+                //No pcm files
+            }
+
+            //Show files .wav  
+            try{
+                // let wavFiles = execSync(`find | grep -e "${username}.*.pcm"`).toString();
+                
+                // messageObj.channel.send(`Achei estes arquivos ${username}:\n${pcmFileNames}`);
+                
+            }catch(e){
+                messageObj.channel.send("Não consegui achar arquivo nenhum.")
+            }
+
+        }else{
+            messageObj.channel.send(`Audio de quem?`);
+        }
+        
     },
     ['%help']: async (messageObj, params) => {
         let resp = "Lista de Comandos: \n";
